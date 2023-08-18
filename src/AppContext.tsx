@@ -2,11 +2,7 @@ import { createContext } from "preact";
 import { useEffect, useState, useContext } from "preact/hooks";
 import { getSiteList } from "@/service";
 import { SiteInfo } from "@/types";
-import {
-  URL_ACTION_PARAM,
-  URL_DOMAIN_PARAM,
-  URL_REPO_PARAM,
-} from "@/constants";
+import { REPO_PARAM, REF_PARAM, ACTION_PARAM } from "@/constants";
 import { WarningBox } from "@/components/WarningBox";
 import { ErrorBox } from "@/components/ErrorBox";
 import { actions } from "@/param-actions";
@@ -15,7 +11,6 @@ interface IAppContext {
   siteList: SiteInfo[];
   loading: boolean;
   error: Error | null;
-
   fetchSiteList: () => Promise<void>;
 }
 
@@ -31,16 +26,16 @@ export const useAppContext = (): IAppContext => {
 
 export const AppContextProvider = ({ children }: { children: any }) => {
   const searchParams = new URLSearchParams(window.location.search);
-  const repo = searchParams.get(URL_REPO_PARAM);
-  const domain = searchParams.get(URL_DOMAIN_PARAM);
-  const action = searchParams.get(URL_ACTION_PARAM);
+  const repo = searchParams.get(REPO_PARAM);
+  const ref = searchParams.get(REF_PARAM);
+  const action = searchParams.get(ACTION_PARAM);
 
   const [siteList, setSiteList] = useState<SiteInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const initialize = (siteList: SiteInfo[]) => {
-    if (!domain || !action) {
+    if (!ref || !action) {
       setSiteList(siteList);
       return;
     }
@@ -51,7 +46,7 @@ export const AppContextProvider = ({ children }: { children: any }) => {
       return;
     }
 
-    const isRedirectSuccess = selectedAction(siteList, domain);
+    const isRedirectSuccess = selectedAction(siteList, ref);
     if (!isRedirectSuccess) {
       throw new Error(
         "Redirection failed. Domain could not be found in the site list."
@@ -90,7 +85,7 @@ export const AppContextProvider = ({ children }: { children: any }) => {
       );
     }
 
-    if (domain && action) {
+    if (ref && action) {
       return <WarningBox>Redirecting...</WarningBox>;
     }
 
